@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PushNotifications</string>
+    <string name="message">Message</string>
+    <string name="title">Title</string>
+    <string name="token">Token</string>
+    <string name="send">Send</string>
+</resources>
