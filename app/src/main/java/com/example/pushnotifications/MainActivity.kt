@@ -47,17 +47,24 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
+// Auf Antwort warten in der Coroutine -> stackoverflow ohne gehts
     private fun sendNotification(notification: PushNotification) = CoroutineScope(Dispatchers.IO).launch {
         try {
-            val response = RetrofitInstance.api.postNotification(notification)
+            //val response =
+                RetrofitInstance.api.postNotification(notification)
+            //Log.d("test",response.toString())
+            /*
             if(response.isSuccessful){
                 Log.d(TAG, "Response: ${Gson().toJson(response)}")
             } else {
                 Log.e(TAG, response.errorBody().toString())
             }
+            */
+
         } catch (e: Exception){
             Log.e(TAG, e.toString())
         }
     }
+
+
 }
