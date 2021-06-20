@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_ONE_SHOT
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Build
 import android.util.Log
@@ -27,6 +28,23 @@ private const val CHANNEL_NAME = "Channel_IGNORE"
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class FirebaseService : FirebaseMessagingService() {
 
+    companion object{
+        var sharedPref : SharedPreferences? = null
+
+        var token : String?
+        get() {
+                    return sharedPref?.getString("token", "")
+                }
+        set(value){
+            sharedPref?.edit()?.putString("token", value)?.apply()
+        }
+    }
+
+    override fun onNewToken(newToken: String) {
+        super.onNewToken(newToken)
+        token = newToken
+    }
+
     /**
      * implements the interface for receiving messages from extern services.
      * Mainly used as Service is Google Firebase.
@@ -45,9 +63,6 @@ class FirebaseService : FirebaseMessagingService() {
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
             createNotificationChannel(notificationManager)
         }
-
-        Log.d("message", message.notification.toString())
-
         //That the activity we intent to perform an action is already running and should be now the "new actual activity"
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         //This declares that we the intent is a one time object we wont use it another time.
@@ -66,8 +81,7 @@ class FirebaseService : FirebaseMessagingService() {
 
             notificationManager.notify(notificationID,notification)
         } else {
-            // sich selbst schicken via firebase, does not work - crash
-            Log.d("Message", message.data["message"].toString())
+            // sich selbst schicken via firebase - works
             val notification = NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle(message.data["title"])
                 .setContentText(message.data["message"])
@@ -95,5 +109,6 @@ class FirebaseService : FirebaseMessagingService() {
                 enableVibration(true)
             }
             notificationManager.createNotificationChannel(channel)
+
     }
 }
