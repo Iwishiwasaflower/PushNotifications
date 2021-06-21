@@ -11,13 +11,14 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Build
-import android.util.Log
+import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.core.os.bundleOf
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlin.random.Random
+
+
 //Channels which the App listens to.
 //For better user controlling which notifications he wants to ignore/see
 //For additional Settings like Sound/Receive type.
@@ -33,7 +34,7 @@ class FirebaseService : FirebaseMessagingService() {
 
         var token : String?
         get() {
-                    return sharedPref?.getString("token", "")
+            return sharedPref?.getString("token", "")
                 }
         set(value){
             sharedPref?.edit()?.putString("token", value)?.apply()
@@ -68,30 +69,26 @@ class FirebaseService : FirebaseMessagingService() {
         //This declares that we the intent is a one time object we wont use it another time.
         val pendingIntent = PendingIntent.getActivity(this,0, intent, FLAG_ONE_SHOT)
 
-        // von fb console - works
-        if(message.data["title"] == null){
-            //Design of the Notification
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(message.notification?.title.toString())
-                .setContentText(message.notification?.body.toString())
-                .setSmallIcon(R.drawable.ic_android_black_24dp)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build()
-
+        //Design of the Notification
+       /* val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(message.notification?.title.toString())
+            .setContentText(message.notification?.body.toString())
+            .setSmallIcon(R.drawable.ic_android_black_24dp)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
             notificationManager.notify(notificationID,notification)
-        } else {
-            // sich selbst schicken via firebase - works
-            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(message.data["title"])
-                .setContentText(message.data["message"])
-                .setSmallIcon(R.drawable.ic_android_black_24dp)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent)
-                .build()
-
-            notificationManager.notify(notificationID,notification)
-        }
+        */
+        //Custom notification
+        val fancy = RemoteViews(getPackageName(), R.layout.notifications_fancy);
+        val expand = RemoteViews(getPackageName(), R.layout.notification_fancy_expanded)
+        val noti = NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.ic_android_black_24dp)
+            .setCustomContentView(fancy)
+            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+            .setCustomBigContentView(expand)
+            .setSilent(false)
+            .build()
+        notificationManager.notify(notificationID, noti)
 
     }
     /**
