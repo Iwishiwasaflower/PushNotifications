@@ -29,16 +29,16 @@ private const val CHANNEL_NAME = "Channel_IGNORE"
 @SuppressLint("MissingFirebaseInstanceTokenRefresh")
 class FirebaseService : FirebaseMessagingService() {
 
-    companion object{
-        var sharedPref : SharedPreferences? = null
+    companion object {
+        var sharedPref: SharedPreferences? = null
 
-        var token : String?
-        get() {
-            return sharedPref?.getString("token", "")
-                }
-        set(value){
-            sharedPref?.edit()?.putString("token", value)?.apply()
-        }
+        var token: String?
+            get() {
+                return sharedPref?.getString("token", "")
+            }
+            set(value) {
+                sharedPref?.edit()?.putString("token", value)?.apply()
+            }
     }
 
     override fun onNewToken(newToken: String) {
@@ -58,45 +58,47 @@ class FirebaseService : FirebaseMessagingService() {
         val intent = Intent(this, MainActivity::class.java)
 
 
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager =
+            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationID = Random.nextInt()
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannel(notificationManager)
         }
         //That the activity we intent to perform an action is already running and should be now the "new actual activity"
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         //This declares that we the intent is a one time object we wont use it another time.
-        val pendingIntent = PendingIntent.getActivity(this,0, intent, FLAG_ONE_SHOT)
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, FLAG_ONE_SHOT)
 
-        //Design of the Notification
-       /* val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(message.notification?.title.toString())
-            .setContentText(message.notification?.body.toString())
-            .setSmallIcon(R.drawable.ic_android_black_24dp)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .build()
-            notificationManager.notify(notificationID,notification)
-        */
-        //Custom notification
-        val fancy = RemoteViews(getPackageName(), R.layout.notifications_fancy);
-        val expand = RemoteViews(getPackageName(), R.layout.notification_fancy_expanded)
-        val noti = NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.ic_android_black_24dp)
-            .setCustomContentView(fancy)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomBigContentView(expand)
-            .setSilent(false)
-            .build()
-        notificationManager.notify(notificationID, noti)
-
+        // von fb console - works
+        if (message.data["title"] == null) {
+            //Design of the Notification
+            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(message.notification?.title.toString())
+                .setContentText(message.notification?.body.toString())
+                .setSmallIcon(R.drawable.ic_android_black_24dp)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build()
+        } else {
+            // sich selbst schicken via firebase - works
+            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(message.data["title"])
+                .setContentText(message.data["message"])
+                .setSmallIcon(R.drawable.ic_android_black_24dp)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build()
+            notificationManager.notify(notificationID, notification)
+        }
     }
+
     /**
      * This Methode creates the Notification channel on which the Notification gets send.
      * The purpose is, to have more Settings options for the user.
      */
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(notificationManager : NotificationManager){
+    private fun createNotificationChannel(notificationManager: NotificationManager) {
         //How it should be delivered.
         val channel =
             NotificationChannel(CHANNEL_ID, CHANNEL_NAME, IMPORTANCE_HIGH).apply {
@@ -105,7 +107,7 @@ class FirebaseService : FirebaseMessagingService() {
                 lightColor = Color.GREEN
                 enableVibration(true)
             }
-            notificationManager.createNotificationChannel(channel)
+        notificationManager.createNotificationChannel(channel)
 
     }
 }
