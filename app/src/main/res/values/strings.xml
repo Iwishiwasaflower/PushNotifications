@@ -7,4 +7,5 @@
     <string name="fancy_title">New Message!</string>
     <string name="fancy_body">Expand this!</string>
     <string name="fancy_expanded">MAKE IT FANCY</string>
+    <string name="picture">picture</string>
 </resources>

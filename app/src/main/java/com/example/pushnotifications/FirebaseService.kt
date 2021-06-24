@@ -14,6 +14,7 @@ import android.os.Build
 import android.widget.RemoteViews
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.RemoteInput
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import kotlin.random.Random
@@ -69,28 +70,51 @@ class FirebaseService : FirebaseMessagingService() {
         //This declares that we the intent is a one time object we wont use it another time.
         val pendingIntent = PendingIntent.getActivity(this,0, intent, FLAG_ONE_SHOT)
 
-        //Design of the Notification
-       /* val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(message.notification?.title.toString())
-            .setContentText(message.notification?.body.toString())
-            .setSmallIcon(R.drawable.ic_android_black_24dp)
-            .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
-            .build()
-            notificationManager.notify(notificationID,notification)
-        */
-        //Custom notification
-        val fancy = RemoteViews(getPackageName(), R.layout.notifications_fancy);
-        val expand = RemoteViews(getPackageName(), R.layout.notification_fancy_expanded)
-        val noti = NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.ic_android_black_24dp)
-            .setCustomContentView(fancy)
-            .setStyle(NotificationCompat.DecoratedCustomViewStyle())
-            .setCustomBigContentView(expand)
-            .setSilent(false)
-            .build()
-        notificationManager.notify(notificationID, noti)
+        // von fb console - works
+        if(message.data["title"] == null){
+            //Design of the Notification
+            val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(message.notification?.title.toString())
+                .setContentText(message.notification?.body.toString())
+                .setSmallIcon(R.drawable.ic_android_black_24dp)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent)
+                .build()
+        } else {
+            //Custom notification
+             val intent1:Intent = Intent(this,MainActivity2::class.java).apply {
+                 action = "open"
+                 putExtra("id", 1);
+             }
+            val pIntent1:PendingIntent = PendingIntent.getActivity(this, 0, intent1, PendingIntent.FLAG_UPDATE_CURRENT)
 
+            //Pending intent for a notification button help
+            val answerIntent = PendingIntent.getBroadcast(this, ConstantResource.REQUEST_CODE_HELP, Intent(this, MyNotificationReceiver::class.java)
+                .putExtra(ConstantResource.KEY_HELP, ConstantResource.REQUEST_CODE_HELP), PendingIntent.FLAG_UPDATE_CURRENT)
+
+            //We need this object for getting direct input from notification
+            val remoteInput = RemoteInput.Builder(ConstantResource.NOTIFICATION_REPLY)
+                .setLabel("Please enter your message")
+                .build()
+
+            //For the remote input we need this action object
+            val action = NotificationCompat.Action.Builder(android.R.drawable.btn_star, "Reply Now...", answerIntent)
+                .addRemoteInput(remoteInput)
+                .build()
+
+            val fancy = RemoteViews(getPackageName(), R.layout.notifications_fancy);
+            val expand = RemoteViews(getPackageName(), R.layout.notification_fancy_expanded)
+            val noti = NotificationCompat.Builder(this, CHANNEL_ID).setSmallIcon(R.drawable.ic_android_black_24dp)
+                .setCustomContentView(fancy)
+                .setStyle(NotificationCompat.DecoratedCustomViewStyle())
+                .addAction(0,"open",pIntent1)
+                .addAction(action)
+                .setSilent(false)
+                .build()
+            notificationManager.notify(notificationID, noti)
+        }
     }
+
     /**
      * This Methode creates the Notification channel on which the Notification gets send.
      * The purpose is, to have more Settings options for the user.

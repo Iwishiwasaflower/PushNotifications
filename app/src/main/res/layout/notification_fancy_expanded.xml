@@ -18,7 +18,8 @@
     <ImageView
         android:id="@+id/image_view_expanded"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="264dp"
+        android:contentDescription="@string/picture"
         android:scaleType="centerCrop"
         android:src="@drawable/ic_android_black_24dp" />
 
